@@ -2,11 +2,14 @@ import os
 import requests
 import json
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
 GODADDY_DOMAIN = os.getenv('GODADDY_DOMAIN')
 GODADDY_KEY = os.getenv('GODADDY_KEY')
 GODADDY_SECRET = os.getenv('GODADDY_SECRET')
+
+logger = logging.getLogger('dyndns')
 
 
 def get_current_ip():
@@ -31,18 +34,18 @@ def update_dns(current_ip, type='A', name='@', ttl=600):
     url = 'https://api.godaddy.com/v1/domains/{}/records/{}/{}'
     url = url.format(GODADDY_DOMAIN, type, name)
     headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': 'sso-key {}:{}'.format(
             GODADDY_KEY,
             GODADDY_SECRET
         )
     }
     data = json.dumps([{
-        "data": current_ip,
-        "ttl": ttl,
-        "name": name,
-        "type": type
+        'data': current_ip,
+        'ttl': ttl,
+        'name': name,
+        'type': type
     }]).encode('utf-8')
     resp = requests.put(url, headers=headers, data=data)
     return resp.text
@@ -52,12 +55,18 @@ def main():
     current_ip = get_current_ip()
     resp = get_record_info()[0]
     if resp['data'] != current_ip:
-        print("IP is different...")
-        print("IP before:", resp['data'])
-        print("IP after:", current_ip)
+        logger.info('IP is different...')
+        logger.info('IP before: {}'.format(resp['data']))
+        logger.info('IP after: {}'.format(current_ip))
         update_resp = update_dns(current_ip)
-        print("Updating IP:", update_resp)
+        logging.info('Updating IP: {}'.format(update_resp))
 
 
 if __name__ == '__main__':
+    hdlr = logging.FileHandler('./dyndns.log')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+    logger.setLevel(logging.INFO)
+
     main()
