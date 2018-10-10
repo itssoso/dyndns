@@ -30,7 +30,7 @@ def get_record_info(type='A', name='@'):
     return resp.json()
 
 
-def update_dns(current_ip, type='A', name='@', ttl=30):
+def update_dns(current_ip, type='A', name='@', ttl=600):
     url = 'https://api.godaddy.com/v1/domains/{}/records/{}/{}'
     url = url.format(GODADDY_DOMAIN, type, name)
     headers = {
