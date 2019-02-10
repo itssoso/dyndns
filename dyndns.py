@@ -61,7 +61,8 @@ def main():
         update_resp = update_dns(current_ip)
         logging.info('Updating IP: {}'.format(update_resp))
     else:
-        logger.info('IP is same...{}'.format(current_ip))
+        pass
+        # logger.info('IP is same...{}'.format(current_ip))
 
 
 if __name__ == '__main__':
